@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  ms-1:
+    build:
+      context: ./ms-persona-cliente
+      dockerfile: Dockerfile
+    image: ms-1:1.0
+    container_name: ms-persona-cliente
+    ports:
+      - "9595:9595"
+    restart: always
+    networks:
+      - j-network 
+  ms-2:
+    build:
+      context: ./ms-cuenta-movimiento
+      dockerfile: Dockerfile
+    image: ms-2:1.0
+    container_name: ms-cuentas-movimiento
+    ports:
+      - "9596:9596"
+    restart: always
+    networks:
+      - j-network 
+networks: 
+  j-network:
+    driver: bridge

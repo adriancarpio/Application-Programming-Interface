@@ -1,0 +1,13 @@
+package com.cuentas.movimiento;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class MsCuentasMovimientoApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

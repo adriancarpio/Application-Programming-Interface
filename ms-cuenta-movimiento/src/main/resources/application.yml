@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: dev
+  banner:
+    location: classpath:banner.txt
+    
+#http://localhost:9596/api/v1/v3/api-docs
+#http://localhost:9596/api/v1/swagger-ui/index.html

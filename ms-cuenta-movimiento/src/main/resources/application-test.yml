@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: ms-cuentas-movimiento
+
+  jpa:
+    database: postgresql
+    show-sql: false
+    hibernate:
+      ddl-auto: create
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      jakarta:
+        persistence:
+          sharedCache:
+            mode: ALL
+    open-in-view: false
+
+  datasource:
+    url: jdbc:postgresql://host.docker.internal:5433/bancoapp
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 9596
+  servlet:
+    context-path: /api/v1
