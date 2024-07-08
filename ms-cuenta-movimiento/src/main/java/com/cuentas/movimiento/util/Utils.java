@@ -5,8 +5,10 @@ import org.springframework.context.annotation.Configuration;
 
 import com.cuentas.movimiento.dto.CuentaDTO;
 import com.cuentas.movimiento.dto.MovimientoDTO;
+import com.cuentas.movimiento.dto.TransaccionDTO;
 import com.cuentas.movimiento.model.Cuenta;
 import com.cuentas.movimiento.model.Movimiento;
+import com.cuentas.movimiento.model.Transaccion;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,5 +33,12 @@ public class Utils {
 	public Movimiento convertToEntityMovimiento(MovimientoDTO dto) {
 		return mapper.map(dto, Movimiento.class);
 	}
+	
+	public TransaccionDTO convertToDtoTransaccion(Transaccion obj) {
+		return mapper.map(obj, TransaccionDTO.class);
+	}
 
+	public Transaccion convertToEntityTransaccion(TransaccionDTO dto) {
+		return mapper.map(dto, Transaccion.class);
+	}
 }

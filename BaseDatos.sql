@@ -81,32 +81,62 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.movimientos
     OWNER to postgres;
---------------FUNCION GENERA REPORTE ESTADO DE CUENTA-----------------------------------------
-CREATE OR REPLACE FUNCTION fn_movimientos_cuenta(
-    p_cliente VARCHAR,
-    p_fecha_inicio DATE DEFAULT NULL,
-    p_fecha_fin DATE DEFAULT NULL
+
+
+-- Table: public.transacciones
+
+-- DROP TABLE IF EXISTS public.transacciones;
+
+CREATE TABLE IF NOT EXISTS public.transacciones
+(
+    id bigint NOT NULL DEFAULT nextval('transacciones_id_seq'::regclass),
+    fecha timestamp(6) without time zone NOT NULL,
+    ip_origen character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    numero_cuenta character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    request_json text COLLATE pg_catalog."default",
+    response_json text COLLATE pg_catalog."default",
+    saldo_disponible numeric(38,2) NOT NULL,
+    saldo_inicial numeric(38,2) NOT NULL,
+    tipo_movimiento character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    valor numeric(38,2) NOT NULL,
+    CONSTRAINT transacciones_pkey PRIMARY KEY (id)
 )
-RETURNS TABLE (
-    fecha TEXT, -- Cambiado a tipo TEXT
-    cliente VARCHAR,
-    numeroCuenta VARCHAR,
-    tipo VARCHAR,
-    saldoInicial NUMERIC,
-    estado BOOLEAN,
-    movimiento NUMERIC,
-    saldoDisponible NUMERIC
-) AS $$
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.transacciones
+    OWNER to postgres;
+--------------FUNCION GENERA REPORTE ESTADO DE CUENTA-----------------------------------------
+CREATE OR REPLACE FUNCTION public.fn_movimientos_cuenta(
+	p_cliente character varying,
+	p_fecha_inicio date DEFAULT NULL::date,
+	p_fecha_fin date DEFAULT NULL::date)
+    RETURNS TABLE(fecha text, cliente character varying, numerocuenta character varying, tipo character varying, saldoinicial numeric, estado boolean, movimiento numeric, saldodisponible numeric) 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
 BEGIN
     RETURN QUERY
-    SELECT TO_CHAR(m.fecha, 'DD/MM/YYYY') as fecha, 
-           c.cliente, 
-           c.numero_cuenta AS numeroCuenta, 
-           c.tipo_cuenta AS tipo, 
-           c.saldo_inicial AS saldoInicial,
-           c.estado, 
-           m.valor AS movimiento, 
-           c.saldo_inicial AS saldoDisponible
+  SELECT TO_CHAR(m.fecha::DATE, 'DD/MM/YYYY') as fecha, 
+       c.cliente, 
+       c.numero_cuenta AS numeroCuenta, 
+       c.tipo_cuenta AS tipo, 
+        CASE 
+           WHEN m.tipo_movimiento = 'Retiro' THEN c.saldo_inicial + m.valor
+           WHEN m.tipo_movimiento = 'Deposito' THEN c.saldo_inicial - m.valor
+           ELSE c.saldo_inicial
+       END AS saldoInicial,
+       c.estado,
+
+	 CASE 
+           WHEN m.tipo_movimiento = 'Retiro' THEN c.saldo_inicial - m.valor
+		   WHEN m.tipo_movimiento = 'Deposito' THEN m.valor
+           ELSE c.saldo_inicial
+       END AS movimiento,
+       c.saldo_inicial AS saldoDisponible
     FROM public.cuentas c 
     INNER JOIN public.movimientos m ON m.numero_cuenta = c.numero_cuenta
     WHERE (p_cliente IS NULL OR c.cliente = p_cliente)
